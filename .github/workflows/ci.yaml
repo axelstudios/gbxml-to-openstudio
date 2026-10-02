@@ -1,0 +1,69 @@
+# This is a basic workflow to help you get started with Actions
+name: continuous integration
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+
+jobs:
+
+  tests-unit:
+    runs-on: ubuntu-latest
+    container:
+      image: nrel/openstudio:3.8.0
+    steps:
+      - uses: actions/checkout@v4
+      - run: openstudio classic measure --run_tests measures
+
+  tests-integration:
+    # needs: tests-unit
+    runs-on: ubuntu-latest
+    container:
+      image: nrel/openstudio:3.8.0
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: install node and test
+        shell: bash
+        run: |
+          echo "installing node v16"
+          curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+          apt update && apt install -y nodejs
+          node -v
+          npm -v
+      - name: install npm dependencies
+        shell: bash
+        run: |
+          cd test/integration
+          echo "install dependencies"
+          npm install
+      - name: run annual simulations
+        shell: bash
+        run: |
+          cd test/integration
+          echo "run annual simulations"
+          npm start annual subset
+      - name: run sizing simulations
+        shell: bash
+        run: |
+          cd test/integration
+          echo "run sizing simulations"
+          npm start sizing subset
+
+      # - name: run stats, display and check for failures
+      #   shell: bash
+      #   run: |
+      #     cd test/integration
+      #     echo "run stats"
+      #     npm run stats
+      #     filename=$(ls stats*.csv)
+      #     cat $filename
+      #     # Simple check to see if failure in stats file
+      #     if [ "$(grep -c "Fail" $filename)" -ge 1 ]; then
+      #       exit 1;
+      #     fi
+
+
+
