@@ -1,5 +1,6 @@
 https://github.com/github/gitignore/blob/main/Ruby.gitignore
 
+.idea
 .vscode
 
 build*
